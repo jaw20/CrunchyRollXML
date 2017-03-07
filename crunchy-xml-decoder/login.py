@@ -21,7 +21,7 @@ def getuserstatus(session=''):
     #open('tempfile','w').write(site.encode('UTF-8'))
     if re.search(re.escape('      ga(\'set\', \'dimension5\', \'registered\');'), site):
         status = 'Free Member'
-    elif re.search(re.escape('      ga(\'set\', \'dimension6\', \'premium\');'), site):
+    elif re.search(re.escape('      ga(\'set\', \'dimension5\', \'premium\');'), site):
         if re.search(re.escape('      ga(\'set\', \'dimension6\', \'premiumplus\');'), site):
             status = 'Premium+ Member'
         else:
