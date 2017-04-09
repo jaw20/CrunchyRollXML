@@ -67,10 +67,10 @@ def gethtml(url):
                                         u'العربية' : 'arME' , u'Deutsch' : 'deDE'}[lang]
         if forceusa:
             try:
-                session.cookies['sess_id'] = requests.get('http://www.crunblocker.com/sess_id.php').text
+                session.cookies['sess_id'] = re.split('"',requests.get('https://cr.onestay.moe/getid').text)[5]
             except:
                 sleep(10)  # sleep so we don't overload crunblocker
-                session.cookies['sess_id'] = requests.get('http://www.crunblocker.com/sess_id.php').text
+                session.cookies['sess_id'] = re.split('"',requests.get('https://cr.onestay.moe/getid').text)[5]
     parts = urlparse.urlsplit(url)
     if not parts.scheme or not parts.netloc:
         print 'Apparently not a URL'
