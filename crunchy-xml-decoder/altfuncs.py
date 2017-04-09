@@ -112,7 +112,7 @@ def getxml(req, med_id):
                'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; rv:26.0) Gecko/20100101 Firefox/26.0)'}
     res = session.post(url, params=payload, headers=headers)
     res.encoding = 'UTF-8'
-    print session.cookies
+    #print session.cookies
     return res.text
 
 
