@@ -22,10 +22,9 @@ def getuserstatus(session=''):
     if re.search(re.escape('      ga(\'set\', \'dimension5\', \'registered\');'), site):
         status = 'Free Member'
     elif re.search(re.escape('      ga(\'set\', \'dimension6\', \'premium\');'), site):
-        if re.search(re.escape('      ga(\'set\', \'dimension6\', \'premiumplus\');'), site):
-            status = 'Premium+ Member'
-        else:
-            status = 'Premium Member'
+        status = 'Premium Member'
+    elif re.search(re.escape('      ga(\'set\', \'dimension6\', \'premiumplus\');'), site):
+        status = 'Premium+ Member'
     if status != 'Guest':
         user1 = re.findall('<a href=\"/user/(.+)\" ', site).pop()
     return [status,user1]
@@ -48,7 +47,7 @@ def login(username, password):
                'login_form[_token]': token}
 
     res_post = session.post('https://www.crunchyroll.com/login', data=payload, headers=headers, allow_redirects = False)
-    if res_post.status_code != 302:
+    if not (res_post.status_code == 302 or (res_post.status_code == 200 and username == '')):
       print 'Login failed'
       sys.exit()
 
