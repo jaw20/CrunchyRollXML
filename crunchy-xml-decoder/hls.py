@@ -10,6 +10,7 @@ from threading import Thread
 from time import sleep
 import math
 import time
+import subprocess
 
 blocksize = 16384
 
@@ -217,15 +218,31 @@ def fetch_streams(output_dir, video, connection_n):
     # Wait for all of them to finish
     for x in threads:
         x.join()
-    final_file_ = open(output_dir, 'wb')
-    for i in range (1, connection_n+1):
-        temp_file_ = open(output_dir+str(i), 'rb')
-        final_file_.write(temp_file_.read())
-        temp_file_.close()
-        locals()['file_seg_{0}'.format(i)].close()
-    final_file_.close()
-    for i in range (1, connection_n+1):
-        os.remove(output_dir+str(i))
+    #print locals()
+    if connection_n==1:
+        locals()['file_seg_1'].close()
+        os.rename(output_dir+'1',output_dir)
+    else:
+        #final_file_ = open(output_dir, 'wb')
+        cmd_appd = ['copy /b ','cat ']
+        for i in range (1, connection_n+1):
+            cmd_appd[0] += '"'+output_dir+str(i)+'"+'
+            cmd_appd[1] += '"'+output_dir+str(i)+'" '
+            #temp_file_ = open(output_dir+str(i), 'rb')
+            #final_file_.write(temp_file_.read())
+            #temp_file_.close()
+            locals()['file_seg_{0}'.format(i)].close()
+        #final_file_.close()
+        cmd_appd[0] = cmd_appd[0][:-1]
+        cmd_appd[0] += ' "'+output_dir+'"'
+        cmd_appd[1] += '> "'+output_dir+'"'
+        print cmd_appd
+        try:
+            subprocess.call(cmd_appd[0], shell=True)
+        except:
+            subprocess.call(cmd_appd[1], shell=True)
+        for i in range (1, connection_n+1):
+            os.remove(output_dir+str(i))
     print '\n'
 
 
