@@ -103,18 +103,18 @@ def size_adj(size_, x_):
             else:
                 size_out_ = str(size_/1024)+'KB'
         else:
-            size_out_ = str(size_)
+            size_out_ = str(size_)+'bytes'
     if x_ == 'internet':
-        if size_/1000 > 1:
-            if (size_/1000)/1000 > 1:
-                if ((size_/1000)/1000)/1000 > 1:
-                    size_out_ = format(((size_/1000)/1000)/1000, '.2f')+'Gbps'
+        if size_/1024 > 1:
+            if (size_/1024)/1024 > 1:
+                if ((size_/1024)/1024)/1024 > 1:
+                    size_out_ = format(((size_/1024)/1024)/1024, '.2f')+'Gb/s'
                 else:
-                    size_out_ = format((size_/1000)/1000, '.2f')+'Mbps'
+                    size_out_ = format((size_/1024)/1024, '.2f')+'Mb/s'
             else:
-                size_out_ = format(size_/1000, '.2f')+'Kbps'
+                size_out_ = format(size_/1024, '.2f')+'Kb/s'
         else:
-            size_out_ = format(size_, '.2f')
+            size_out_ = format(size_, '.2f')+'b/s'
     return size_out_
 
 def download(video, output, Url, seg_n, connection_n):
@@ -236,7 +236,7 @@ def fetch_streams(output_dir, video, connection_n):
         cmd_appd[0] = cmd_appd[0][:-1]
         cmd_appd[0] += ' "'+output_dir+'"'
         cmd_appd[1] += '> "'+output_dir+'"'
-        print cmd_appd
+        #print cmd_appd
         try:
             subprocess.call(cmd_appd[0], shell=True)
         except:
