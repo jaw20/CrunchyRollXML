@@ -224,6 +224,7 @@ Booting up...
 
     #h = HTMLParser.HTMLParser()
     title = re.findall('<title>(.+?)</title>', html)[0].replace('Crunchyroll - Watch ', '')
+    print format('Now Downloading - '+title)
     if len(os.path.join('export', title+'.flv')) > 255:
         title = re.findall('^(.+?) \- ', title)[0]
 

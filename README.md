@@ -7,6 +7,9 @@ Requires Python modules:
 - lxml (https://pypi.python.org/pypi/lxml/3.2.5)
 - m3u8 (https://pypi.python.org/pypi/m3u8/)
 - cfscrape (https://pypi.python.org/pypi/cfscrape/)
+- Node.js is required for (safe) Javascript execution.
+	Your computer or server may already have it (check with node -v). If not, you can install it with apt-get install 
+	nodejs on Ubuntu and Debian. Otherwise, please read (https://nodejs.org/en/download/package-manager/)Node's installation instructions.
 
 crunchy-xml-decoder will try to install PyCrypto and lxml automatically,
 if they are missing. m3u8 and crscrape can be installed using PIP.
