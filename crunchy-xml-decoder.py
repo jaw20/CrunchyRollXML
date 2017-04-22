@@ -29,15 +29,16 @@ def autocatch():
     aList = []
     print 'indicate the url : '
     url=raw_input()
-    #RSS
-    rescash = session.get(url+'.rss', params=data)
-    rescash.encoding = 'UTF-8'
-    mykey = rescash.text
-    session_num_ = [int(word.replace('season ','')) for word in re.findall('season [0-9]+', mykey)]
-    if not session_num_ == []:
-        if not min(session_num_) == 1:
-            print 'RSS Auto-cash Failed\ntrying Cashing the Site'
-            #
+    try:
+        rescash = session.get(url+'.rss', params=data)
+        rescash.encoding = 'UTF-8'
+        mykey = rescash.text
+        aList_t = re.findall('<link>'+url+'/(.+?)</link>', mykey)
+        for i in aList_t:
+            aList.append(url+'/'+i)
+    except:
+        print 'RSS Auto-cash Failed\ntrying Cashing the Site'
+        try:
             rescash = session.get(url, params=data)
             rescash.encoding = 'UTF-8'
             mykey = rescash.text
@@ -51,26 +52,8 @@ def autocatch():
                 aList_t = re.findall('<a href="/(.+?)" title=', mykey)
             for i in aList_t:
                 aList.append('http://www.crunchyroll.com/'+i)
-    aList_t = re.findall('<link>'+url+'/(.+?)</link>', mykey)
-    for i in aList_t:
-        aList.append(url+'/'+i)
-    if  rescash.status_code == 404:
-        print 'RSS Auto-cash Failed\ntrying Cashing the Site'
-        #
-        rescash = session.get(url, params=data)
-        rescash.encoding = 'UTF-8'
-        mykey = rescash.text
-        aList_t = re.findall('<a href="/(.+?)" title=', mykey)
-        if aList_t == []:
-            print 'Site Auto-cash Failed\ntrying trying enable Usa unblocker'
-            session.cookies['sess_id'] = re.split('"',requests.get('https://cr.onestay.moe/getid').text)[5]
-            rescash = session.get(url, params=data)
-            rescash.encoding = 'UTF-8'
-            mykey = rescash.text
-            aList_t = re.findall('<a href="/(.+?)" title=', mykey)
-        for i in aList_t:
-            aList.append('http://www.crunchyroll.com/'+i)
-
+        except:
+            pass
     if aList != []:
         take = open("queue.txt", "w")
         take.write(u'#the any line that has hash before the link will be skiped\n')
