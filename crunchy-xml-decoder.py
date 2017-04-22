@@ -18,54 +18,21 @@ import time
 
 #-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#(autocatch)#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#
 def autocatch():
-    aList = []
     print 'indicate the url : '
     url=raw_input()
-    try:
-        mykey = urllib2.urlopen(url+'.rss')
-        for text in mykey:
-            match = re.search('<link>'+url+'/(.+?)</link>', text)
-            if match:
-                aList.append(url+'/'+match.group(1))
-    except:
-        print 'RSS Auto-cash Failed\ntrying Cashing the Site'
-        try:
-            mykey = urllib2.urlopen(url)
-            for text in mykey:
-                match = re.search('<a href="/(.+?)" title=', text)
-                if match:
-                    aList.append('http://www.crunchyroll.com/'+match.group(1))
-        except:
-            pass
-    if aList == []:
-        print 'Site Auto-cash Failed\ntrying trying enable Usa unblocker'
-#################################################################
-        import requests, pickle
-        with open('cookies') as f:
-            cookies = requests.utils.cookiejar_from_dict(pickle.load(f))
-            session = requests.session()
-            session.cookies = cookies
-            del session.cookies['c_visitor']
-            session.cookies['sess_id'] = re.split('"',requests.get('https://cr.onestay.moe/getid').text)[5]
-        data = {'Referer': 'http://crunchyroll.com/', 'Host': 'www.crunchyroll.com',
-                'User-Agent': 'Mozilla/5.0  Windows NT 6.1; rv:26.0 Gecko/20100101 Firefox/26.0'}
-        rescash = session.get(url, params=data)
-        rescash.encoding = 'UTF-8'
-#################################################################
-        mykey = rescash.text
-        aList_t = re.findall('<a href="/(.+?)" title=', mykey)
-        for i in aList_t:
-            aList.append('http://www.crunchyroll.com/'+i)
-    if aList != []:
-        take = open("queue.txt", "w")
-        take.write(u'#the any line that has hash before the link will be skiped\n')
-        aList.reverse()
-        for i in aList:
-            print >> take, i
-        take.close()
-    else:
-        print 'Site Auto-cash Failed\nPlease Build List Manually'
-    subprocess.call('notepad.exe '+"queue.txt")
+    mykey = urllib2.urlopen(url+'.rss')
+    take = open("queue_.txt", "w")
+
+    for text in mykey:
+        match = re.search('<link>'+url+'/(.+?)</link>', text)
+        if match:
+            print >> take, url+'/'+match.group(1)
+
+    take.close()
+
+    with open('queue_.txt') as f,  open('queue.txt', 'w') as fout:
+        fout.writelines(reversed(f.readlines()))
+    os.remove('queue_.txt')
 #-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#(CHECKING)#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#
 if not os.path.exists("export"):
     os.makedirs("export")
