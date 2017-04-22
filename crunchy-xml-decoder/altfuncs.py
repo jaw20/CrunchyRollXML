@@ -67,12 +67,15 @@ def gethtml(url):
                                         u'العربية' : 'arME' , u'Deutsch' : 'deDE'}[lang]
         if forceusa:
             try:
-                session.cookies['sess_id'] = re.split('"',requests.get('https://cr.onestay.moe/getid').text)[5]
-                #print 'I recommend to re-login so we don\'t overload crunchyroll unblocker'
+                session.cookies['sess_id'] = session.cookies['usa_sess_id']
             except:
-                sleep(10)  # sleep so we don't overload crunblocker
-                session.cookies['sess_id'] = re.split('"',requests.get('https://rubbix.net/crunchyroll/').text)[5]
-                #print 'I recommend to re-login so we don\'t overload crunchyroll unblocker'
+                try:
+                    session.cookies['sess_id'] = re.split('"',requests.get('https://cr.onestay.moe/getid').text)[5]
+                    print 'I recommend to re-login so we don\'t overload crunchyroll unblocker'
+                except:
+                    sleep(10)  # sleep so we don't overload crunblocker
+                    session.cookies['sess_id'] = re.split('"',requests.get('https://rubbix.net/crunchyroll/').text)[5]
+                    print 'I recommend to re-login so we don\'t overload crunchyroll unblocker'
     parts = urlparse.urlsplit(url)
     if not parts.scheme or not parts.netloc:
         print 'Apparently not a URL'
