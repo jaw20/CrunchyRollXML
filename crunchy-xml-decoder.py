@@ -211,7 +211,7 @@ def Languages_(Varname_):
         Languages_()
 
 def videoquality_():
-    slang1, slang2, sforcesub, sforceusa, slocalizecookies, vquality, vonlymainsub, vconnection_n_ = altfuncs.config()
+    slang1, slang2, sforcesub, sforceusa, slocalizecookies, vquality, vonlymainsub = altfuncs.config()
     seleccion = 5
     print '''Set This To The Preferred Quality:
 0.- android (hard-subbed)
