@@ -20,13 +20,13 @@ import time
 def autocatch():
     print 'indicate the url : '
     url=raw_input()
-    mykey = urllib2.urlopen(url+'.rss')
+    mykey = urllib2.urlopen(url)
     take = open("queue_.txt", "w")
 
     for text in mykey:
-        match = re.search('<link>'+url+'/(.+?)</link>', text)
+        match = re.search('<a href="/(.+?)" title=', text)
         if match:
-            print >> take, url+'/'+match.group(1)
+            print >> take, 'http://www.crunchyroll.com/'+match.group(1)
 
     take.close()
 
