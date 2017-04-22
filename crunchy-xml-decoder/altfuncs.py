@@ -68,12 +68,10 @@ def gethtml(url):
                                         u'العربية' : 'arME' , u'Deutsch' : 'deDE'}[lang]
         if forceusa:
             try:
-                session.cookies['sess_id'] = re.split('"',requests.get('https://cr.onestay.moe/getid').text)[5]
-                #print 'I recommend to re-login so we don\'t overload crunchyroll unblocker'
+                session.cookies['sess_id'] = requests.get('http://www.crunblocker.com/sess_id.php').text
             except:
                 sleep(10)  # sleep so we don't overload crunblocker
-                session.cookies['sess_id'] = re.split('"',requests.get('https://rubbix.net/crunchyroll/').text)[5]
-                #print 'I recommend to re-login so we don\'t overload crunchyroll unblocker'
+                session.cookies['sess_id'] = requests.get('http://www.crunblocker.com/sess_id.php').text
     parts = urlparse.urlsplit(url)
     if not parts.scheme or not parts.netloc:
         print 'Apparently not a URL'
@@ -106,15 +104,10 @@ def getxml(req, med_id):
                                         u'العربية' : 'arME' , u'Deutsch' : 'deDE'}[lang]
         if forceusa:
             try:
-                session.cookies['sess_id'] = session.cookies['usa_sess_id']
+                session.cookies['sess_id'] = requests.get('http://www.crunblocker.com/sess_id.php').text
             except:
-                try:
-                    session.cookies['sess_id'] = re.split('"',requests.get('https://cr.onestay.moe/getid').text)[5]
-                    #print 'I recommend to re-login so we don\'t overload crunchyroll unblocker'
-                except:
-                    sleep(10)  # sleep so we don't overload crunblocker
-                    session.cookies['sess_id'] = re.split('"',requests.get('https://rubbix.net/crunchyroll/').text)[5]
-                    #print 'I recommend to re-login so we don\'t overload crunchyroll unblocker'
+                sleep(10)  # sleep so we don't overload crunblocker
+                session.cookies['sess_id'] = requests.get('http://www.crunblocker.com/sess_id.php').text
     headers = {'Referer': 'http://static.ak.crunchyroll.com/versioned_assets/ChromelessPlayerApp.17821a0e.swf',
                'Host': 'www.crunchyroll.com', 'Content-type': 'application/x-www-form-urlencoded',
                'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; rv:26.0) Gecko/20100101 Firefox/26.0)'}
