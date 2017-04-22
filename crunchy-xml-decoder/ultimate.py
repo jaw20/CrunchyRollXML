@@ -221,7 +221,7 @@ Booting up...
 
     #lang1, lang2 = altfuncs.config()
     #lang1, lang2, forcesub = altfuncs.config()
-    lang1, lang2, forcesub, forceusa, localizecookies, vquality, onlymainsub, connection_n_ = altfuncs.config()
+    lang1, lang2, forcesub, forceusa, localizecookies, vquality, onlymainsub = altfuncs.config()
     #player_revision = altfuncs.playerrev(page_url)
     html = altfuncs.gethtml(page_url)
     #htmlfile = open('html.html', 'wb')
@@ -300,7 +300,7 @@ Booting up...
             video_input = os.path.join("export", title + '.flv')
         else:
             video_input = os.path.join("export", title + '.ts')
-            video_hls(filen, video_input, connection_n_)
+            video_hls(filen, video_input)
 
         heightp = '360p' if xmlconfig.height.string == '368' else '{0}p'.format(xmlconfig.height.string)  # This is less likely to fail
         subtitles(title)
