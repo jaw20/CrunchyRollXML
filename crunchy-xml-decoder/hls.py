@@ -7,8 +7,6 @@ import StringIO
 import socket
 import os
 
-import math
-
 blocksize = 16384
 
 class resumable_fetch:
@@ -31,7 +29,6 @@ class resumable_fetch:
         req = urllib2.Request(self.uri)
         if self.offset:
             req.headers['Range'] = 'bytes=%s-' % (self.offset, )
-
         while True:
             try:
                 self.stream = urllib2.urlopen(req, timeout = 180)
@@ -62,7 +59,6 @@ class resumable_fetch:
                 self._restart()
         return "".join(buffer)
 
-
 def copy_with_decrypt(input, output, key, media_sequence):
     if key.iv is not None:
         iv = str(key.iv)[2:]
@@ -78,10 +74,7 @@ def copy_with_decrypt(input, output, key, media_sequence):
 def fetch_streams(output, video):
     output = open(output, 'wb')
     for n, seg in enumerate(video.segments):
-        percentage = ((n + 1) * 100)/len(video.segments)
-        avail_dots = 50
-        shaded_dots = int(math.floor(float(n + 1) / len(video.segments) * avail_dots))
-        sys.stdout.write("\r" + '[' + '.'*shaded_dots + ' '*(avail_dots-shaded_dots) + '] %'+str(percentage)+' (%d/%d)\x1b[2K' % (n + 1, len(video.segments)))
+        sys.stdout.write('\x1b[2K\r%d/%d' % (n + 1, len(video.segments)))
         sys.stdout.flush()
         raw = resumable_fetch(seg.uri, n+1, len(video.segments))
         if hasattr(video, 'key'):
