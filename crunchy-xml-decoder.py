@@ -91,9 +91,8 @@ ilang2 = 'English'
 iforcesub = False
 iforceusa = False
 ilocalizecookies = False
-ionlymainsub = False
-iconnection_n_ = 1
-def defaultsettings(vvquality, vlang1, vlang2, vforcesub, vforceusa, vlocalizecookies, onlymainsub, vconnection_n_):
+ionlymainsub=False
+def defaultsettings(vvquality, vlang1, vlang2, vforcesub, vforceusa, vlocalizecookies, onlymainsub):
     dsettings='''[SETTINGS]
 # Set this to the preferred quality. Possible values are: "android" (hard-subbed), "360p", "480p", "720p", "1080p", or "highest" for highest available.
 # Note that any quality higher than 360p still requires premium, unless it's available that way for free (some first episodes).
@@ -112,13 +111,11 @@ forceusa = '''+str(vforceusa)+'''
 localizecookies = '''+str(vlocalizecookies)+'''
 # Set this if you only want to mux one subtitle only (this so make easy for some devices like TVs to play subtitle)
 onlymainsub='''+str(onlymainsub)+'''
-# this option to increase the Number of the connection
-connection_n_='''+str(vconnection_n_)+'''
 '''
     open('.\\settings.ini', 'w').write(dsettings.encode('utf-8'))
 
 if not os.path.exists(".\\settings.ini"):
-    defaultsettings(iquality, ilang1, ilang2, iforcesub, iforceusa, ilocalizecookies, ionlymainsub, iconnection_n_)
+    defaultsettings(iquality, ilang1, ilang2, iforcesub, iforceusa, ilocalizecookies, ionlymainsub)
 	
 if not os.path.exists(".\\cookies"):
     if raw_input(u'Do you have an account [Y/N]?').lower() == 'y':
@@ -211,7 +208,7 @@ def Languages_(Varname_):
         Languages_()
 
 def videoquality_():
-    slang1, slang2, sforcesub, sforceusa, slocalizecookies, vquality, vonlymainsub, vconnection_n_ = altfuncs.config()
+    slang1, slang2, sforcesub, sforceusa, slocalizecookies, vquality, vonlymainsub = altfuncs.config()
     seleccion = 5
     print '''Set This To The Preferred Quality:
 0.- android (hard-subbed)
@@ -244,7 +241,7 @@ We're Not Miracle Workers.
         print "ERROR: Invalid option."
         videoquality_()
 def settings_():
-    slang1, slang2, sforcesub, sforceusa, slocalizecookies, vquality, vonlymainsub, vconnection_n_ = altfuncs.config()
+    slang1, slang2, sforcesub, sforceusa, slocalizecookies, vquality, vonlymainsub = altfuncs.config()
     slang1 = {u'Español (Espana)' : 'Espanol_Espana', u'Français (France)' : 'Francais', u'Português (Brasil)' : 'Portugues',
             u'English' : 'English', u'Español' : 'Espanol', u'Türkçe' : 'Turkce', u'Italiano' : 'Italiano',
             u'العربية' : 'Arabic', u'Deutsch' : 'Deutsch'}[slang1]
@@ -269,8 +266,7 @@ def settings_():
 5.- USA Proxy = '''+str(sforceusa)+'''			#use a US session ID
 6.- Localize cookies = '''+str(slocalizecookies)+'''		#Localize the cookies (Experiment)
 7.- Only One Subtitle = '''+str(vonlymainsub)+'''		#Only download Primary Language
-8.- Change the Number of The Download Connection = '''+str(vconnection_n_)+'''
-9.- Restore Default Settings
+8.- Restore Default Settings
 '''
     try:
         seleccion = int(input("> "))
@@ -279,50 +275,46 @@ def settings_():
         settings_()
     if seleccion == 1 :
         vquality = videoquality_()
-        defaultsettings(vquality, slang1, slang2, sforcesub, sforceusa, slocalizecookies, vonlymainsub, vconnection_n_)
+        defaultsettings(vquality, slang1, slang2, sforcesub, sforceusa, slocalizecookies, vonlymainsub)
         settings_()
     elif seleccion == 2 :
         slang1 = Languages_('slang1')
-        defaultsettings(vquality, slang1, slang2, sforcesub, sforceusa, slocalizecookies, vonlymainsub, vconnection_n_)
+        defaultsettings(vquality, slang1, slang2, sforcesub, sforceusa, slocalizecookies, vonlymainsub)
         settings_()
     elif seleccion == 3 :
         slang2 = Languages_('slang2')
-        defaultsettings(vquality, slang1, slang2, sforcesub, sforceusa, slocalizecookies, vonlymainsub, vconnection_n_)
+        defaultsettings(vquality, slang1, slang2, sforcesub, sforceusa, slocalizecookies, vonlymainsub)
         settings_()
     elif seleccion == 4 :
         if sforcesub:
             sforcesub = False
         else:
             sforcesub = True
-        defaultsettings(vquality, slang1, slang2, sforcesub, sforceusa, slocalizecookies, vonlymainsub, vconnection_n_)
+        defaultsettings(vquality, slang1, slang2, sforcesub, sforceusa, slocalizecookies, vonlymainsub)
         settings_()
     elif seleccion == 5 :
         if sforceusa:
             sforceusa = False
         else:
             sforceusa = True
-        defaultsettings(vquality, slang1, slang2, sforcesub, sforceusa, slocalizecookies, vonlymainsub, vconnection_n_)
+        defaultsettings(vquality, slang1, slang2, sforcesub, sforceusa, slocalizecookies, vonlymainsub)
         settings_()
     elif seleccion == 6 :
         if slocalizecookies:
             slocalizecookies = False
         else:
             slocalizecookies = True
-        defaultsettings(vquality, slang1, slang2, sforcesub, sforceusa, slocalizecookies, vonlymainsub, vconnection_n_)
+        defaultsettings(vquality, slang1, slang2, sforcesub, sforceusa, slocalizecookies, vonlymainsub)
         settings_()
     elif seleccion == 7 :
         if vonlymainsub:
             vonlymainsub = False
         else:
             vonlymainsub = True
-        defaultsettings(vquality, slang1, slang2, sforcesub, sforceusa, slocalizecookies, vonlymainsub, vconnection_n_)
+        defaultsettings(vquality, slang1, slang2, sforcesub, sforceusa, slocalizecookies, vonlymainsub)
         settings_()
     elif seleccion == 8 :
-        vconnection_n_ = raw_input(u'Please Input The Download Connection Nymber: ')
-        defaultsettings(vquality, slang1, slang2, sforcesub, sforceusa, slocalizecookies, vonlymainsub, vconnection_n_)
-        settings_()
-    elif seleccion == 9 :
-        defaultsettings(iquality, ilang1, ilang2, iforcesub, iforceusa, ilocalizecookies, ionlymainsub, iconnection_n_)
+        defaultsettings(iquality, ilang1, ilang2, iforcesub, iforceusa, ilocalizecookies, ionlymainsub)
         settings_()
     elif seleccion == 0 :
         pass
@@ -415,7 +407,7 @@ if arg.subs_only:
         decode.decode(raw_input('Please enter Crunchyroll video URL:\n'))
     sys.exit()
 if arg.default_settings:
-    defaultsettings(iquality, ilang1, ilang2, iforcesub, iforceusa, ilocalizecookies, ionlymainsub, iconnection_n_)
+    defaultsettings(iquality, ilang1, ilang2, iforcesub, iforceusa, ilocalizecookies, ionlymainsub)
     sys.exit()
 if arg.queue:
     queueu(arg.queue)

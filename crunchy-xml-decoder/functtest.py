@@ -92,23 +92,11 @@ try:
 except ImportError:
     print 'Installing Cfscrape...',
     try:
-        #if python_bit_=="32 bit" or python_bit_=="64 bit":
+        if python_bit_=="32 bit" or python_bit_=="64 bit":
             pip.main(['install', '--quiet', 'cfscrape'])
             print "Installed"
     except KeyError:
         print "Something Has Gone Wrong While Retrieving Cfscrape link\nPlease Download Cfscrape Manually"
-
-try:
-    import m3u8
-    print('m3u8 installed')
-except ImportError:
-    print 'Installing m3u8...',
-    try:
-        #if python_bit_=="32 bit" or python_bit_=="64 bit":
-            pip.main(['install', '--quiet', 'm3u8'])
-            print "Installed"
-    except KeyError:
-        print "Something Has Gone Wrong While Retrieving m3u8 link\nPlease Download m3u8 Manually"
 
 if Crypto_link_ or lxml_link_:
     if not os.path.exists("temp"):

@@ -55,11 +55,6 @@ def login(username, password):
         c.expires = 9999999999  # Saturday, November 20th 2286, 17:46:39 (GMT)
 
     del session.cookies['c_visitor']
-    #try:
-        #session.cookies['usa_sess_id'] = re.split('"',requests.get('https://cr.onestay.moe/getid').text)[5]
-    #except:
-        #sleep(10)  # sleep so we don't overload crunblocker
-        #session.cookies['usa_sess_id'] = re.split('"',requests.get('https://rubbix.net/crunchyroll/').text)[5]
 
     userstatus = getuserstatus(session)
     if username != '' and userstatus[1] == 'Guest':
