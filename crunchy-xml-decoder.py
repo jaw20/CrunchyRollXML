@@ -30,13 +30,13 @@ def autocatch():
     print 'indicate the url : '
     url=raw_input()
     #RSS
-    rescash = session.get(url+'.rss', params=data)
+    rescash = session.get(url+'.rss2', params=data)#rss feed is disable for more modification
     rescash.encoding = 'UTF-8'
     mykey = rescash.text
     session_num_ = [int(word.replace('season ','')) for word in re.findall('season [0-9]+', mykey)]
     if not session_num_ == []:
         if not min(session_num_) == 1:
-            print 'RSS Auto-cash Failed\ntrying Cashing the Site'
+            #print 'RSS Auto-cash Failed\ntrying Cashing the Site'
             #
             rescash = session.get(url, params=data)
             rescash.encoding = 'UTF-8'
