@@ -11,6 +11,7 @@ from time import sleep
 import math
 import time
 import subprocess
+import requests
 
 blocksize = 16384
 
@@ -21,7 +22,11 @@ class resumable_fetch:
         self.total = total
         self.offset = 0
         self._restart()
-        self.file_size = int(self.stream.info().get('Content-Length', -1))
+        try:
+            self.file_size = int(self.stream.info().get('Content-Length', -1))
+        except:
+            self.file_size = int(self.stream.headers['content-length'])
+        #print self.file_size
         if self.file_size <= 0:
             print "Invalid file size"
             sys.exit()
@@ -31,19 +36,38 @@ class resumable_fetch:
         sys.stdout.flush()
 
     def _restart(self):
-        req = urllib2.Request(self.uri)
-        if self.offset:
-            req.headers['Range'] = 'bytes=%s-' % (self.offset, )
+        try:
+            #import requstss2
+            req = urllib2.Request(self.uri)
+            if self.offset:
+                req.headers['Range'] = 'bytes=%s-' % (self.offset, )
 
-        while True:
-            try:
-                self.stream = urllib2.urlopen(req, timeout = 180)
-                break
-            except socket.timeout:
-                continue
-            except socket.error, e:
-                if e.errno != errno.ECONNRESET:
-                    raise
+            while True:
+                try:
+                    self.stream = urllib2.urlopen(req, timeout = 180)
+                    #print self.stream
+                    break
+                except socket.timeout:
+                    continue
+                except socket.error, e:
+                    if e.errno != errno.ECONNRESET:
+                        raise
+        except:
+            if self.offset:
+                headers = {'Range': 'bytes=%s-' % (self.offset, )}
+                req = requests.get(self.uri, headers=headers, stream=True, timeout = 180)
+            else:
+                req = requests.get(self.uri, stream=True, timeout = 180)
+
+            while True:
+                try:
+                    self.stream = req.raw
+                    break
+                except socket.timeout:
+                    continue
+                except socket.error, e:
+                    if e.errno != errno.ECONNRESET:
+                        raise
 
     def read(self, n):
         buffer = []
@@ -75,10 +99,15 @@ def compute_total_size(video):
     total_size = 0
     total_size_l_=[]
     for n, seg in enumerate(video.segments):
-        req_1 = urllib2.Request(seg.uri)
-        stream_1 = urllib2.urlopen(req_1, timeout = 180)
-        total_size += int(stream_1.info().get('Content-Length', -1))
-        total_size_l_.append(stream_1.info().get('Content-Length', -1))
+        try:
+            req_1 = urllib2.Request(seg.uri)
+            stream_1 = urllib2.urlopen(req_1, timeout = 180)
+            total_size += int(stream_1.info().get('Content-Length', -1))
+            total_size_l_.append(stream_1.info().get('Content-Length', -1))
+        except:
+            stream_1r = requests.head(seg.uri, timeout = 180).headers['content-length']
+            total_size += int(stream_1r)
+            total_size_l_.append(stream_1r)
 
 def copy_with_decrypt(input, output, key, media_sequence):
     if key.iv is not None:
@@ -249,10 +278,16 @@ def fetch_streams(output_dir, video, connection_n):
 def fetch_encryption_key(video):
     if hasattr(video, 'key'):
         assert video.key.method == 'AES-128'
-        video.key.key_value = urllib2.urlopen(url = video.key.uri).read()
+        try:
+            video.key.key_value = urllib2.urlopen(url = video.key.uri).read()
+        except:
+            video.key.key_value = requests.get(video.keys[0].uri).text.encode('windows-1252')
     else:
         assert video.keys[0].method == 'AES-128'
-        video.keys[0].key_value = urllib2.urlopen(url = video.keys[0].uri).read()
+        try:
+            video.keys[0].key_value = urllib2.urlopen(url = video.keys[0].uri).read()
+        except:
+            video.keys[0].key_value = requests.get(video.keys[0].uri).text.encode('windows-1252')
 
 def find_best_video(uri):
     playlist = m3u8.load(uri)
