@@ -13,6 +13,7 @@ import re
 import shutil
 import subprocess
 import sys
+import gc
 #import HTMLParser
 
 import altfuncs
@@ -352,6 +353,8 @@ Booting up...
         #os.remove(os.path.join(os.getcwd(), 'export', '') + title + '.###')
         for f in subtitle_input:
             os.remove(f)
+    #Try to cleanup memory after each episode in an attempt to prevent a possible leak.
+    gc.collect()
     print 'Cleanup Complete'
 
 # ----------
