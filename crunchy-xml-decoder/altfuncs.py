@@ -35,7 +35,8 @@ def config():
     global localizecookies
     localizecookies = configr.getboolean('SETTINGS', 'localizecookies')
     onlymainsub = configr.getboolean('SETTINGS', 'onlymainsub')
-    return [lang, lang2, forcesub, forceusa, localizecookies, quality, onlymainsub]
+    connection_n_ = int(configr.get('SETTINGS', 'connection_n_'))
+    return [lang, lang2, forcesub, forceusa, localizecookies, quality, onlymainsub, connection_n_]
 
 
 #def playerrev(url):
@@ -112,6 +113,7 @@ def getxml(req, med_id):
                'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; rv:26.0) Gecko/20100101 Firefox/26.0)'}
     res = session.post(url, params=payload, headers=headers)
     res.encoding = 'UTF-8'
+    #print session.cookies
     return res.text
 
 
