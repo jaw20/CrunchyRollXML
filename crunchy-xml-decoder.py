@@ -11,28 +11,76 @@ import ultimate
 import login
 import decode
 import altfuncs
-import re, urllib2
+import re
 from collections import deque
 
 import time
 
 #-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#(autocatch)#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#
 def autocatch():
+    import requests, pickle
+    with open('cookies') as f:
+        cookies = requests.utils.cookiejar_from_dict(pickle.load(f))
+        session = requests.session()
+        session.cookies = cookies
+        del session.cookies['c_visitor']
+    data = {'Referer': 'http://crunchyroll.com/', 'Host': 'www.crunchyroll.com',
+            'User-Agent': 'Mozilla/5.0  Windows NT 6.1; rv:26.0 Gecko/20100101 Firefox/26.0'}
+    aList = []
     print 'indicate the url : '
     url=raw_input()
-    mykey = urllib2.urlopen(url)
-    take = open("queue_.txt", "w")
+    #RSS
+    rescash = session.get(url+'.rss', params=data)
+    rescash.encoding = 'UTF-8'
+    mykey = rescash.text
+    session_num_ = [int(word.replace('season ','')) for word in re.findall('season [0-9]+', mykey)]
+    if not session_num_ == []:
+        if not min(session_num_) == 1:
+            print 'RSS Auto-cash Failed\ntrying Cashing the Site'
+            #
+            rescash = session.get(url, params=data)
+            rescash.encoding = 'UTF-8'
+            mykey = rescash.text
+            aList_t = re.findall('<a href="/(.+?)" title=', mykey)
+            if aList_t == []:
+                print 'Site Auto-cash Failed\ntrying trying enable Usa unblocker'
+                session.cookies['sess_id'] = re.split('"',requests.get('https://cr.onestay.moe/getid').text)[5]
+                rescash = session.get(url, params=data)
+                rescash.encoding = 'UTF-8'
+                mykey = rescash.text
+                aList_t = re.findall('<a href="/(.+?)" title=', mykey)
+            for i in aList_t:
+                aList.append('http://www.crunchyroll.com/'+i)
+    aList_t = re.findall('<link>'+url+'/(.+?)</link>', mykey)
+    for i in aList_t:
+        aList.append(url+'/'+i)
+    if  rescash.status_code == 404:
+        print 'RSS Auto-cash Failed\ntrying Cashing the Site'
+        #
+        rescash = session.get(url, params=data)
+        rescash.encoding = 'UTF-8'
+        mykey = rescash.text
+        aList_t = re.findall('<a href="/(.+?)" title=', mykey)
+        if aList_t == []:
+            print 'Site Auto-cash Failed\ntrying trying enable Usa unblocker'
+            session.cookies['sess_id'] = re.split('"',requests.get('https://cr.onestay.moe/getid').text)[5]
+            rescash = session.get(url, params=data)
+            rescash.encoding = 'UTF-8'
+            mykey = rescash.text
+            aList_t = re.findall('<a href="/(.+?)" title=', mykey)
+        for i in aList_t:
+            aList.append('http://www.crunchyroll.com/'+i)
 
-    for text in mykey:
-        match = re.search('<a href="/(.+?)" title=', text)
-        if match:
-            print >> take, 'http://www.crunchyroll.com/'+match.group(1)
-
-    take.close()
-
-    with open('queue_.txt') as f,  open('queue.txt', 'w') as fout:
-        fout.writelines(reversed(f.readlines()))
-    os.remove('queue_.txt')
+    if aList != []:
+        take = open("queue.txt", "w")
+        take.write(u'#the any line that has hash before the link will be skiped\n')
+        aList.reverse()
+        for i in aList:
+            print >> take, i
+        take.close()
+    else:
+        print 'Site Auto-cash Failed\nPlease Build List Manually'
+    subprocess.call('notepad.exe '+"queue.txt")
 #-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#(CHECKING)#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#
 if not os.path.exists("export"):
     os.makedirs("export")
@@ -43,8 +91,9 @@ ilang2 = 'English'
 iforcesub = False
 iforceusa = False
 ilocalizecookies = False
-ionlymainsub=False
-def defaultsettings(vvquality, vlang1, vlang2, vforcesub, vforceusa, vlocalizecookies, onlymainsub):
+ionlymainsub = False
+iconnection_n_ = 1
+def defaultsettings(vvquality, vlang1, vlang2, vforcesub, vforceusa, vlocalizecookies, onlymainsub, vconnection_n_):
     dsettings='''[SETTINGS]
 # Set this to the preferred quality. Possible values are: "android" (hard-subbed), "360p", "480p", "720p", "1080p", or "highest" for highest available.
 # Note that any quality higher than 360p still requires premium, unless it's available that way for free (some first episodes).
@@ -63,11 +112,13 @@ forceusa = '''+str(vforceusa)+'''
 localizecookies = '''+str(vlocalizecookies)+'''
 # Set this if you only want to mux one subtitle only (this so make easy for some devices like TVs to play subtitle)
 onlymainsub='''+str(onlymainsub)+'''
+# this option to increase the Number of the connection
+connection_n_='''+str(vconnection_n_)+'''
 '''
     open('.\\settings.ini', 'w').write(dsettings.encode('utf-8'))
 
 if not os.path.exists(".\\settings.ini"):
-    defaultsettings(iquality, ilang1, ilang2, iforcesub, iforceusa, ilocalizecookies, ionlymainsub)
+    defaultsettings(iquality, ilang1, ilang2, iforcesub, iforceusa, ilocalizecookies, ionlymainsub, iconnection_n_)
 	
 if not os.path.exists(".\\cookies"):
     if raw_input(u'Do you have an account [Y/N]?').lower() == 'y':
@@ -160,7 +211,7 @@ def Languages_(Varname_):
         Languages_()
 
 def videoquality_():
-    slang1, slang2, sforcesub, sforceusa, slocalizecookies, vquality, vonlymainsub = altfuncs.config()
+    slang1, slang2, sforcesub, sforceusa, slocalizecookies, vquality, vonlymainsub, vconnection_n_ = altfuncs.config()
     seleccion = 5
     print '''Set This To The Preferred Quality:
 0.- android (hard-subbed)
@@ -193,7 +244,7 @@ We're Not Miracle Workers.
         print "ERROR: Invalid option."
         videoquality_()
 def settings_():
-    slang1, slang2, sforcesub, sforceusa, slocalizecookies, vquality, vonlymainsub = altfuncs.config()
+    slang1, slang2, sforcesub, sforceusa, slocalizecookies, vquality, vonlymainsub, vconnection_n_ = altfuncs.config()
     slang1 = {u'Español (Espana)' : 'Espanol_Espana', u'Français (France)' : 'Francais', u'Português (Brasil)' : 'Portugues',
             u'English' : 'English', u'Español' : 'Espanol', u'Türkçe' : 'Turkce', u'Italiano' : 'Italiano',
             u'العربية' : 'Arabic', u'Deutsch' : 'Deutsch'}[slang1]
@@ -218,7 +269,8 @@ def settings_():
 5.- USA Proxy = '''+str(sforceusa)+'''			#use a US session ID
 6.- Localize cookies = '''+str(slocalizecookies)+'''		#Localize the cookies (Experiment)
 7.- Only One Subtitle = '''+str(vonlymainsub)+'''		#Only download Primary Language
-8.- Restore Default Settings
+8.- Change the Number of The Download Connection = '''+str(vconnection_n_)+'''
+9.- Restore Default Settings
 '''
     try:
         seleccion = int(input("> "))
@@ -227,46 +279,50 @@ def settings_():
         settings_()
     if seleccion == 1 :
         vquality = videoquality_()
-        defaultsettings(vquality, slang1, slang2, sforcesub, sforceusa, slocalizecookies, vonlymainsub)
+        defaultsettings(vquality, slang1, slang2, sforcesub, sforceusa, slocalizecookies, vonlymainsub, vconnection_n_)
         settings_()
     elif seleccion == 2 :
         slang1 = Languages_('slang1')
-        defaultsettings(vquality, slang1, slang2, sforcesub, sforceusa, slocalizecookies, vonlymainsub)
+        defaultsettings(vquality, slang1, slang2, sforcesub, sforceusa, slocalizecookies, vonlymainsub, vconnection_n_)
         settings_()
     elif seleccion == 3 :
         slang2 = Languages_('slang2')
-        defaultsettings(vquality, slang1, slang2, sforcesub, sforceusa, slocalizecookies, vonlymainsub)
+        defaultsettings(vquality, slang1, slang2, sforcesub, sforceusa, slocalizecookies, vonlymainsub, vconnection_n_)
         settings_()
     elif seleccion == 4 :
         if sforcesub:
             sforcesub = False
         else:
             sforcesub = True
-        defaultsettings(vquality, slang1, slang2, sforcesub, sforceusa, slocalizecookies, vonlymainsub)
+        defaultsettings(vquality, slang1, slang2, sforcesub, sforceusa, slocalizecookies, vonlymainsub, vconnection_n_)
         settings_()
     elif seleccion == 5 :
         if sforceusa:
             sforceusa = False
         else:
             sforceusa = True
-        defaultsettings(vquality, slang1, slang2, sforcesub, sforceusa, slocalizecookies, vonlymainsub)
+        defaultsettings(vquality, slang1, slang2, sforcesub, sforceusa, slocalizecookies, vonlymainsub, vconnection_n_)
         settings_()
     elif seleccion == 6 :
         if slocalizecookies:
             slocalizecookies = False
         else:
             slocalizecookies = True
-        defaultsettings(vquality, slang1, slang2, sforcesub, sforceusa, slocalizecookies, vonlymainsub)
+        defaultsettings(vquality, slang1, slang2, sforcesub, sforceusa, slocalizecookies, vonlymainsub, vconnection_n_)
         settings_()
     elif seleccion == 7 :
         if vonlymainsub:
             vonlymainsub = False
         else:
             vonlymainsub = True
-        defaultsettings(vquality, slang1, slang2, sforcesub, sforceusa, slocalizecookies, vonlymainsub)
+        defaultsettings(vquality, slang1, slang2, sforcesub, sforceusa, slocalizecookies, vonlymainsub, vconnection_n_)
         settings_()
     elif seleccion == 8 :
-        defaultsettings(iquality, ilang1, ilang2, iforcesub, iforceusa, ilocalizecookies, ionlymainsub)
+        vconnection_n_ = raw_input(u'Please Input The Download Connection Nymber: ')
+        defaultsettings(vquality, slang1, slang2, sforcesub, sforceusa, slocalizecookies, vonlymainsub, vconnection_n_)
+        settings_()
+    elif seleccion == 9 :
+        defaultsettings(iquality, ilang1, ilang2, iforcesub, iforceusa, ilocalizecookies, ionlymainsub, iconnection_n_)
         settings_()
     elif seleccion == 0 :
         pass
@@ -359,7 +415,7 @@ if arg.subs_only:
         decode.decode(raw_input('Please enter Crunchyroll video URL:\n'))
     sys.exit()
 if arg.default_settings:
-    defaultsettings(iquality, ilang1, ilang2, iforcesub, iforceusa, ilocalizecookies)
+    defaultsettings(iquality, ilang1, ilang2, iforcesub, iforceusa, ilocalizecookies, ionlymainsub, iconnection_n_)
     sys.exit()
 if arg.queue:
     queueu(arg.queue)

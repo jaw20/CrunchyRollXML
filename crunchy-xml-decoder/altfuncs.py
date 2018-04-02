@@ -35,7 +35,8 @@ def config():
     global localizecookies
     localizecookies = configr.getboolean('SETTINGS', 'localizecookies')
     onlymainsub = configr.getboolean('SETTINGS', 'onlymainsub')
-    return [lang, lang2, forcesub, forceusa, localizecookies, quality, onlymainsub]
+    connection_n_ = int(configr.get('SETTINGS', 'connection_n_'))
+    return [lang, lang2, forcesub, forceusa, localizecookies, quality, onlymainsub, connection_n_]
 
 
 #def playerrev(url):
@@ -67,10 +68,12 @@ def gethtml(url):
                                         u'العربية' : 'arME' , u'Deutsch' : 'deDE'}[lang]
         if forceusa:
             try:
-                session.cookies['sess_id'] = requests.get('http://www.crunblocker.com/sess_id.php').text
+                session.cookies['sess_id'] = requests.get('http://rssfeedfilter.netne.net/').json()['sessionId'].encode('ascii', 'ignore')
+                #print 'I recommend to re-login so we don\'t overload crunchyroll unblocker'
             except:
                 sleep(10)  # sleep so we don't overload crunblocker
-                session.cookies['sess_id'] = requests.get('http://www.crunblocker.com/sess_id.php').text
+                session.cookies['sess_id'] = requests.get('http://crunchyrollus.netne.net/').json()['sessionId'].encode('ascii', 'ignore')
+                #print 'I recommend to re-login so we don\'t overload crunchyroll unblocker'
     parts = urlparse.urlsplit(url)
     if not parts.scheme or not parts.netloc:
         print 'Apparently not a URL'
@@ -103,15 +106,21 @@ def getxml(req, med_id):
                                         u'العربية' : 'arME' , u'Deutsch' : 'deDE'}[lang]
         if forceusa:
             try:
-                session.cookies['sess_id'] = requests.get('http://www.crunblocker.com/sess_id.php').text
+                session.cookies['sess_id'] = session.cookies['usa_sess_id']
             except:
-                sleep(10)  # sleep so we don't overload crunblocker
-                session.cookies['sess_id'] = requests.get('http://www.crunblocker.com/sess_id.php').text
+                try:
+                    session.cookies['sess_id'] = requests.get('http://rssfeedfilter.netne.net/').json()['sessionId'].encode('ascii', 'ignore')
+                    #print 'I recommend to re-login so we don\'t overload crunchyroll unblocker'
+                except:
+                    sleep(10)  # sleep so we don't overload crunblocker
+                    session.cookies['sess_id'] = requests.get('http://crunchyrollus.netne.net/').json()['sessionId'].encode('ascii', 'ignore')
+                    #print 'I recommend to re-login so we don\'t overload crunchyroll unblocker'
     headers = {'Referer': 'http://static.ak.crunchyroll.com/versioned_assets/ChromelessPlayerApp.17821a0e.swf',
                'Host': 'www.crunchyroll.com', 'Content-type': 'application/x-www-form-urlencoded',
                'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; rv:26.0) Gecko/20100101 Firefox/26.0)'}
     res = session.post(url, params=payload, headers=headers)
     res.encoding = 'UTF-8'
+    #print session.cookies
     return res.text
 
 

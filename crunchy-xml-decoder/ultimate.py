@@ -75,6 +75,9 @@ def subtitles(eptitle):
 
     xmllist = altfuncs.getxml('RpcApiSubtitle_GetListing', media_id)
     xmllist = unidecode(xmllist).replace('><', '>\n<')
+    #xmllist = open('xmllist.xml', 'wb')
+    #xmllist.write(xmllist.encode('utf-8'))
+    #xmllist.close()
 
     global hardcoded
     if '<media_id>None</media_id>' in xmllist:
@@ -220,12 +223,17 @@ Booting up...
 
     #lang1, lang2 = altfuncs.config()
     #lang1, lang2, forcesub = altfuncs.config()
-    lang1, lang2, forcesub, forceusa, localizecookies, vquality, onlymainsub = altfuncs.config()
+    lang1, lang2, forcesub, forceusa, localizecookies, vquality, onlymainsub, connection_n_ = altfuncs.config()
     #player_revision = altfuncs.playerrev(page_url)
     html = altfuncs.gethtml(page_url)
-
+    #htmlfile = open('html.html', 'wb')
+    #htmlfile.write(html.encode('utf-8'))
+    #htmlfile.close()
     #h = HTMLParser.HTMLParser()
     title = re.findall('<title>(.+?)</title>', html)[0].replace('Crunchyroll - Watch ', '')
+    #print os.path.join('export', '{}.flv'.format(title))
+    print format('Now Downloading - '+title.encode('utf-8'))
+    #print title
     if len(os.path.join('export', title+'.flv')) > 255:
         title = re.findall('^(.+?) \- ', title)[0]
 
@@ -247,7 +255,9 @@ Booting up...
 
     media_id = page_url[-6:]
     xmlconfig = BeautifulSoup(altfuncs.getxml('RpcApiVideoPlayer_GetStandardConfig', media_id), 'xml')
-
+    #xmlfile = open('xmlfile.xml', 'wb')
+    #xmlfile.write(xmlconfig.encode('utf-8'))
+    #xmlfile.close()
     try:
         if '4' in xmlconfig.find_all('code')[0]:
             print xmlconfig.find_all('msg')[0].text
@@ -292,7 +302,7 @@ Booting up...
             video_input = os.path.join("export", title + '.flv')
         else:
             video_input = os.path.join("export", title + '.ts')
-            video_hls(filen, video_input)
+            video_hls(filen, video_input, connection_n_)
 
         heightp = '360p' if xmlconfig.height.string == '368' else '{0}p'.format(xmlconfig.height.string)  # This is less likely to fail
         subtitles(title)
