@@ -11,28 +11,76 @@ import ultimate
 import login
 import decode
 import altfuncs
-import re, urllib2
+import re
 from collections import deque
 
 import time
 
 #-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#(autocatch)#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#
 def autocatch():
+    import requests, pickle
+    with open('cookies') as f:
+        cookies = requests.utils.cookiejar_from_dict(pickle.load(f))
+        session = requests.session()
+        session.cookies = cookies
+        del session.cookies['c_visitor']
+    data = {'Referer': 'http://crunchyroll.com/', 'Host': 'www.crunchyroll.com',
+            'User-Agent': 'Mozilla/5.0  Windows NT 6.1; rv:26.0 Gecko/20100101 Firefox/26.0'}
+    aList = []
     print 'indicate the url : '
     url=raw_input()
-    mykey = urllib2.urlopen(url)
-    take = open("queue_.txt", "w")
+    #RSS
+    rescash = session.get(url+'.rss2', params=data)#rss feed is disable for more modification
+    rescash.encoding = 'UTF-8'
+    mykey = rescash.text
+    session_num_ = [int(word.replace('season ','')) for word in re.findall('season [0-9]+', mykey)]
+    if not session_num_ == []:
+        if not min(session_num_) == 1:
+            #print 'RSS Auto-cash Failed\ntrying Cashing the Site'
+            #
+            rescash = session.get(url, params=data)
+            rescash.encoding = 'UTF-8'
+            mykey = rescash.text
+            aList_t = re.findall('<a href="/(.+?)" title=', mykey)
+            if aList_t == []:
+                print 'Site Auto-cash Failed\ntrying trying enable Usa unblocker'
+                session.cookies['sess_id'] = re.split('"',requests.get('https://cr.onestay.moe/getid').text)[5]
+                rescash = session.get(url, params=data)
+                rescash.encoding = 'UTF-8'
+                mykey = rescash.text
+                aList_t = re.findall('<a href="/(.+?)" title=', mykey)
+            for i in aList_t:
+                aList.append('http://www.crunchyroll.com/'+i)
+    aList_t = re.findall('<link>'+url+'/(.+?)</link>', mykey)
+    for i in aList_t:
+        aList.append(url+'/'+i)
+    if  rescash.status_code == 404:
+        print 'RSS Auto-cash Failed\ntrying Cashing the Site'
+        #
+        rescash = session.get(url, params=data)
+        rescash.encoding = 'UTF-8'
+        mykey = rescash.text
+        aList_t = re.findall('<a href="/(.+?)" title=', mykey)
+        if aList_t == []:
+            print 'Site Auto-cash Failed\ntrying trying enable Usa unblocker'
+            session.cookies['sess_id'] = re.split('"',requests.get('https://cr.onestay.moe/getid').text)[5]
+            rescash = session.get(url, params=data)
+            rescash.encoding = 'UTF-8'
+            mykey = rescash.text
+            aList_t = re.findall('<a href="/(.+?)" title=', mykey)
+        for i in aList_t:
+            aList.append('http://www.crunchyroll.com/'+i)
 
-    for text in mykey:
-        match = re.search('<a href="/(.+?)" title=', text)
-        if match:
-            print >> take, 'http://www.crunchyroll.com/'+match.group(1)
-
-    take.close()
-
-    with open('queue_.txt') as f,  open('queue.txt', 'w') as fout:
-        fout.writelines(reversed(f.readlines()))
-    os.remove('queue_.txt')
+    if aList != []:
+        take = open("queue.txt", "w")
+        take.write(u'#the any line that has hash before the link will be skiped\n')
+        aList.reverse()
+        for i in aList:
+            print >> take, i
+        take.close()
+    else:
+        print 'Site Auto-cash Failed\nPlease Build List Manually'
+    subprocess.call('notepad.exe '+"queue.txt")
 #-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#(CHECKING)#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#
 if not os.path.exists("export"):
     os.makedirs("export")
@@ -359,7 +407,7 @@ if arg.subs_only:
         decode.decode(raw_input('Please enter Crunchyroll video URL:\n'))
     sys.exit()
 if arg.default_settings:
-    defaultsettings(iquality, ilang1, ilang2, iforcesub, iforceusa, ilocalizecookies)
+    defaultsettings(iquality, ilang1, ilang2, iforcesub, iforceusa, ilocalizecookies, ionlymainsub)
     sys.exit()
 if arg.queue:
     queueu(arg.queue)
