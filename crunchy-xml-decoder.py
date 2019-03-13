@@ -13,26 +13,34 @@ import decode
 import altfuncs
 import re, urllib2
 from collections import deque
-
+import cfscrape
+from bs4 import BeautifulSoup
 import time
 
 #-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#(autocatch)#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#
 def autocatch():
     print 'indicate the url : '
     url=raw_input()
-    mykey = urllib2.urlopen(url)
+    headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 6.2; WOW64; rv:34.0) Gecko/20100101 Firefox/34.0',
+               'Connection': 'keep-alive'}
+    session = cfscrape.create_scraper()
+    mykey = session.get(url, headers=headers)
     take = open("queue_.txt", "w")
-
-    for text in mykey:
-        match = re.search('<a href="/(.+?)" title=', text)
-        if match:
-            print >> take, 'http://www.crunchyroll.com/'+match.group(1)
-
+    asdasd= BeautifulSoup(mykey.content, 'html.parser')
+    
+    
+    for text in asdasd.find_all('a'):
+        if "episode" in text.get('href'):
+            print text.get('href')
+            print >> take, 'http://www.crunchyroll.com/'+text.get('href')
+            
     take.close()
 
     with open('queue_.txt') as f,  open('queue.txt', 'w') as fout:
         fout.writelines(reversed(f.readlines()))
     os.remove('queue_.txt')
+            
+    
 #-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#(CHECKING)#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#
 if not os.path.exists("export"):
     os.makedirs("export")
@@ -51,7 +59,7 @@ def defaultsettings(vvquality, vlang1, vlang2, vforcesub, vforceusa, vlocalizeco
 # We're not miracle workers.
 video_quality = '''+vvquality+'''
 # Set this to the desired subtitle language. If the subtitles aren't available in that language, it reverts to the second language option (below).
-# Available languages: English, Espanol, Espanol_Espana, Francais, Portugues, Turkce, Italiano, Arabic, Deutsch, Russian
+# Available languages: English, Espanol, Espanol_Espana, Francais, Portugues, Turkce, Italiano, Arabic, Deutsch
 language = '''+vlang1+'''
 # If the first language isn't available, what language would you like as a backup? Only if then they aren't found, then it goes to English as default
 language2 = '''+vlang2+'''

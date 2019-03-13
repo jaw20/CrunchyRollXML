@@ -6,6 +6,7 @@ from time import sleep
 import urlparse
 from ConfigParser import ConfigParser
 import pickle
+import cfscrape
 
 import requests
 
@@ -65,12 +66,12 @@ def gethtml(url):
             session.cookies['c_locale']={u'Español (Espana)' : 'esES', u'Français (France)' : 'frFR', u'Português (Brasil)' : 'ptBR',
                                         u'English' : 'enUS', u'Español' : 'esLA', u'Türkçe' : 'enUS', u'Italiano' : 'itIT',
                                         u'العربية' : 'arME' , u'Deutsch' : 'deDE'}[lang]
-        if forceusa:
-            try:
-                session.cookies['sess_id'] = requests.get('http://www.crunblocker.com/sess_id.php').text
-            except:
-                sleep(10)  # sleep so we don't overload crunblocker
-                session.cookies['sess_id'] = requests.get('http://www.crunblocker.com/sess_id.php').text
+					
+				
+																										
+				   
+																   
+																										
     parts = urlparse.urlsplit(url)
     if not parts.scheme or not parts.netloc:
         print 'Apparently not a URL'
@@ -94,23 +95,28 @@ def getxml(req, med_id):
         payload = {'req': req, 'media_id': med_id, 'video_format': video_format, 'video_encode_quality': resolution}
     with open('cookies') as f:
         cookies = requests.utils.cookiejar_from_dict(pickle.load(f))
-        session = requests.session()
-        session.cookies = cookies
+        headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 6.2; WOW64; rv:34.0) Gecko/20100101 Firefox/34.0',
+               'Connection': 'keep-alive'}
+        session = cfscrape.create_scraper()
+        res_get = session.get('https://www.crunchyroll.com/login', headers=headers)
+        s = re.search('name="login_form\\[_token\\]" value="([^"]*)"', res_get.text)
+        if s is None:
+            print 'CSRF token not found'
+            sys.exit()
+        token = s.group(1)
+        session.cookies['c_d'] = cookies['c_d']
+        session.cookies['c_userid'] = cookies['c_userid']
+        session.cookies['c_userkey'] = cookies['c_userkey']
         del session.cookies['c_visitor']
         if not forceusa and localizecookies:
             session.cookies['c_locale']={u'Español (Espana)' : 'esES', u'Français (France)' : 'frFR', u'Português (Brasil)' : 'ptBR',
                                         u'English' : 'enUS', u'Español' : 'esLA', u'Türkçe' : 'enUS', u'Italiano' : 'itIT',
                                         u'العربية' : 'arME' , u'Deutsch' : 'deDE'}[lang]
-        if forceusa:
-            try:
-                session.cookies['sess_id'] = requests.get('http://www.crunblocker.com/sess_id.php').text
-            except:
-                sleep(10)  # sleep so we don't overload crunblocker
-                session.cookies['sess_id'] = requests.get('http://www.crunblocker.com/sess_id.php').text
     headers = {'Referer': 'http://static.ak.crunchyroll.com/versioned_assets/ChromelessPlayerApp.17821a0e.swf',
                'Host': 'www.crunchyroll.com', 'Content-type': 'application/x-www-form-urlencoded',
-               'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; rv:26.0) Gecko/20100101 Firefox/26.0)'}
-    res = session.post(url, params=payload, headers=headers)
+               'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; rv:26.0) Gecko/20100101 Firefox/26.0)',
+               'login_form[_token]': token}
+    res = session.post(url, data=payload, headers=headers)
     res.encoding = 'UTF-8'
     return res.text
 

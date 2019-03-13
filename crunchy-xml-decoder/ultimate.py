@@ -29,7 +29,7 @@ def video():
     cmd = [os.path.join('video-engine', 'rtmpdump.exe'),
            '-r', url1, '-a', url2,
            '-f', 'WIN 11,8,800,50',
-           '-m', '15',
+           '-m', '600',
            '-W', 'http://www.crunchyroll.com/vendor/ChromelessPlayerApp-c0d121b.swf',
            '-p', page_url2,
            '-y', filen,
@@ -109,7 +109,6 @@ def subtitles(eptitle):
 				lang = lang2
 			except IndexError:
 				lang ='English'
-    sub_id3 = [word.replace('[Russkii]','rus') for word in sub_id3]
     sub_id3 = [word.replace('[English (US)]','eng') for word in sub_id3]
     sub_id3 = [word.replace('[Deutsch]','deu') for word in sub_id3]
     sub_id3 = [word.replace('[Portugues (Brasil)]','por') for word in sub_id3]
@@ -118,15 +117,16 @@ def subtitles(eptitle):
     sub_id3 = [word.replace('[Espanol]','spa') for word in sub_id3]
     sub_id3 = [word.replace('[Italiano]','ita') for word in sub_id3]
     sub_id3 = [word.replace('[l`rby@]','ara') for word in sub_id3]
+    sub_id3 = [word.replace('[Russkii]','rus') for word in sub_id3]
 #    sub_id4 = [word.replace('[l`rby@]',u'[العربية]') for word in sub_id4]
     sub_id4 = [word.replace('[l`rby@]',u'[Arabic]') for word in sub_id4]
-    sub_id5 = [word.replace('[Russkii]','rus') for word in sub_id5]
     sub_id5 = [word.replace('[English (US)]','eng') for word in sub_id5]
     sub_id5 = [word.replace('[Deutsch]','deu') for word in sub_id5]
     sub_id5 = [word.replace('[Portugues (Brasil)]','por') for word in sub_id5]
     sub_id5 = [word.replace('[Francais (France)]','fre') for word in sub_id5]
     sub_id5 = [word.replace('[Espanol (Espana)]','spa_spa') for word in sub_id5]
     sub_id5 = [word.replace('[Espanol]','spa') for word in sub_id5]
+    sub_id5 = [word.replace('[Russkii]','rus') for word in sub_id5]
     sub_id5 = [word.replace('[Italiano]','ita') for word in sub_id5]
     sub_id5 = [word.replace('[l`rby@]','ara') for word in sub_id5]
 #    sub_id6 = [word.replace('[l`rby@]',u'[العربية]') for word in sub_id6]
@@ -157,7 +157,7 @@ def subtitles(eptitle):
         
         sublang = {u'Español (Espana)': 'spa_spa', u'Français (France)': 'fre', u'Português (Brasil)': 'por',
                    u'English': 'eng', u'Español': 'spa', u'Türkçe': 'tur', u'Italiano': 'ita',
-                   u'العربية': 'ara', u'Deutsch': 'deu', u'Russian': 'rus'}[lang]
+                   u'العربية': 'ara',u'[Russkii]':'rus', u'Deutsch': 'deu'}[lang]
 
         for i in sub_id2:
             sublangc = sub_id3.pop(0)
@@ -186,7 +186,7 @@ def ultimate(page_url, seasonnum, epnum):
 ---- Start New Export ----
 --------------------------
 
-CrunchyRoll Downloader Toolkit DX v0.98b 
+CrunchyRoll Downloader Toolkit DX v0.98d
 
 Crunchyroll hasn't changed anything.
 
@@ -222,22 +222,22 @@ Booting up...
     #lang1, lang2, forcesub = altfuncs.config()
     lang1, lang2, forcesub, forceusa, localizecookies, vquality, onlymainsub = altfuncs.config()
     #player_revision = altfuncs.playerrev(page_url)
-    html = altfuncs.gethtml(page_url)
+    #html = altfuncs.gethtml(page_url)
 
     #h = HTMLParser.HTMLParser()
-    title = re.findall('<title>(.+?)</title>', html)[0].replace('Crunchyroll - Watch ', '')
-    if len(os.path.join('export', title+'.flv')) > 255:
-        title = re.findall('^(.+?) \- ', title)[0]
+    #title = re.findall('<title>(.+?)</title>', html)[0].replace('Crunchyroll - Watch ', '')
+    #if len(os.path.join('export', title+'.flv')) > 255:
+    #    title = re.findall('^(.+?) \- ', title)[0]
 
     # title = h.unescape(unidecode(title)).replace('/', ' - ').replace(':', '-').
     # replace('?', '.').replace('"', "''").replace('|', '-').replace('&quot;',"''").strip()
     
     ### Taken from http://stackoverflow.com/questions/6116978/python-replace-multiple-strings and improved to include the backslash###
-    rep = {' / ': ' - ', '/': ' - ', ':': '-', '?': '.', '"': "''", '|': '-', '&quot;': "''", 'a*G':'a G', '*': '#', u'\u2026': '...', ' \ ': ' - '}
+    rep = {' / ': ' - ', '/': ' - ', ':': '', '?': '.', '"': "''", '|': '-', '&quot;': "''", 'a*G':'a G', '*': '#', u'\u2026': '...', ' \ ': ' - '}
 
     rep = dict((re.escape(k), v) for k, v in rep.iteritems())
     pattern = re.compile("|".join(rep.keys()))
-    title = unidecode(pattern.sub(lambda m: rep[re.escape(m.group(0))], title))
+    #title = unidecode(pattern.sub(lambda m: rep[re.escape(m.group(0))], title))
 
     ### End stolen code ###
 
@@ -247,7 +247,11 @@ Booting up...
 
     media_id = page_url[-6:]
     xmlconfig = BeautifulSoup(altfuncs.getxml('RpcApiVideoPlayer_GetStandardConfig', media_id), 'xml')
-
+    #print xmlconfig
+    if "banned" in xmlconfig:
+        print xmlconfig
+        print "You are Banned"
+        sys.exit()
     try:
         if '4' in xmlconfig.find_all('code')[0]:
             print xmlconfig.find_all('msg')[0].text
@@ -256,6 +260,14 @@ Booting up...
         pass
 
     vid_id = xmlconfig.find('media_id').string
+    title = xmlconfig.find('series_title').string 
+    title = pattern.sub(lambda m: rep[re.escape(m.group(0))], title)
+    if int(xmlconfig.find('episode_number').string) < 10:
+        title = unidecode(title + ' - S01E0' + xmlconfig.find('episode_number').string)
+    else:
+        title = unidecode(title + ' - S01E' + xmlconfig.find('episode_number').string)
+    print xmlconfig.find('exclusive').string.replace('Stream','Download') 
+    print title
 
     # ----------
 
@@ -299,7 +311,7 @@ Booting up...
 
         print 'Starting mkv merge'
         mkvmerge = os.path.join("video-engine", "mkvmerge.exe")
-        filename_output = os.path.join("export", title + '[' + heightp.strip() +'].mkv')
+        filename_output = os.path.join("export", title + '.mkv')
         subtitle_input = []
         if os.path.isfile(mkvmerge):
             with_wine = os.name != 'nt'
@@ -312,7 +324,8 @@ Booting up...
         if not hardcoded:
             sublang = {u'Español (Espana)': 'spa_spa', u'Français (France)': 'fre', u'Português (Brasil)': 'por',
                        u'English': 'eng', u'Español': 'spa', u'Türkçe': 'tur', u'Italiano': 'ita',
-                       u'العربية': 'ara', u'Deutsch': 'deu'}[lang]
+                       u'العربية': 'ara', u'[Russkii]':'rus', u'Deutsch': 'deu'}[lang]
+					   
             for i in sub_id2:
                 sublangc=sub_id5.pop(0)
                 sublangn=sub_id6.pop(0)

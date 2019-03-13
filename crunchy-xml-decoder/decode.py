@@ -39,26 +39,47 @@ Booting up...
     if page_url == '':
         page_url = raw_input('Please enter Crunchyroll video URL:\n')
 
+    try:
+        int(page_url)
+        page_url = 'http://www.crunchyroll.com/media-' + page_url
+    except ValueError:
+        if not page_url.startswith('http://') and not page_url.startswith('https://'):
+            page_url = 'http://' + page_url
+        try:
+            int(page_url[-6:])
+        except ValueError:
+            if bool(seasonnum) and bool(epnum):
+                page_url = altfuncs.vidurl(page_url, seasonnum, epnum)
+            elif bool(epnum):
+                page_url = altfuncs.vidurl(page_url, 1, epnum)
+            else:
+                page_url = altfuncs.vidurl(page_url, False, False)
+
+
+
+    # ----------
+    
     lang1, lang2, forcesub, forceusa, localizecookies, vquality, onlymainsub = altfuncs.config()
     #player_revision = altfuncs.playerrev(page_url)
     html = altfuncs.gethtml(page_url)
 
     #h = HTMLParser.HTMLParser()
-    title = re.findall('<title>(.+?)</title>', html)[0].replace('Crunchyroll - Watch ', '')
-    if len(os.path.join('export', title+'.ass')) > 255:
-        title = re.findall('^(.+?) \- ', title)[0]
+#    title = re.findall('<title>(.+?)</title>', html)[0].replace('Crunchyroll - Watch ', '')
+#    if len(os.path.join('export', title+'.ass')) > 255:
+#        title = re.findall('^(.+?) \- ', title)[0]
 
     ### Taken from http://stackoverflow.com/questions/6116978/python-replace-multiple-strings ###
     rep = {' / ': ' - ', '/': ' - ', ':': '-', '?': '.', '"': "''", '|': '-', '&quot;': "''", 'a*G':'a G', '*': '#', u'\u2026': '...'}
 
     rep = dict((re.escape(k), v) for k, v in rep.iteritems())
     pattern = re.compile("|".join(rep.keys()))
-    title = unidecode(pattern.sub(lambda m: rep[re.escape(m.group(0))], title))
+#    title = unidecode(pattern.sub(lambda m: rep[re.escape(m.group(0))], title))
 
     ### End stolen code ###
 
     media_id = page_url[-6:]
     xmlconfig = BeautifulSoup(altfuncs.getxml('RpcApiVideoPlayer_GetStandardConfig', media_id), 'xml')
+
 
     try:
         if '4' in xmlconfig.find_all('code')[0]:
@@ -67,8 +88,21 @@ Booting up...
     except IndexError:
         pass
 
+
     xmllist = altfuncs.getxml('RpcApiSubtitle_GetListing', media_id)
     xmllist = unidecode(xmllist).replace('><', '>\n<')
+
+
+#modif
+    title = xmlconfig.find('series_title').string 
+    title = pattern.sub(lambda m: rep[re.escape(m.group(0))], title)
+    if int(xmlconfig.find('episode_number').string) < 10:
+        title = unidecode(title + ' - 0' + xmlconfig.find('episode_number').string)
+    else:
+        title = unidecode(title + ' - ' + xmlconfig.find('episode_number').string)
+    if len(os.path.join('export', title+'.ass')) > 255:
+        title = re.findall('^(.+?) \- ', title)[0]
+#modif
 
 
 
@@ -124,7 +158,7 @@ Booting up...
             if formattedsubs is None:
                 continue
             #subfile = open(eptitle + '.ass', 'wb')
-            subfile = open(os.path.join('export', title+'['+sub_id3.pop(0)+']'+sub_id4.pop(0)+'.ass'), 'wb')
+            subfile = open(os.path.join('export', title+' ['+sub_id3.pop(0)+']'+sub_id4.pop(0)+'.ass'), 'wb')
             subfile.write(formattedsubs.encode('utf-8-sig'))
             subfile.close()
         #shutil.move(title + '.ass', os.path.join(os.getcwd(), 'export', ''))
