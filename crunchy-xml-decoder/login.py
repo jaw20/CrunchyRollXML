@@ -33,8 +33,12 @@ def login(username, password):
     headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 6.2; WOW64; rv:34.0) Gecko/20100101 Firefox/34.0',
                'Connection': 'keep-alive'}
     session = cfscrape.create_scraper()
+    
     res_get = session.get('https://www.crunchyroll.com/login', headers=headers)
-
+    
+    cookies = res_get.cookies
+    cookies.set('c_locale', 'enUS', domain='.crunchyroll.com', path='/')
+    
     s = re.search('name="login_form\\[_token\\]" value="([^"]*)"', res_get.text)
     if s is None:
        print 'CSRF token not found'
@@ -46,14 +50,20 @@ def login(username, password):
                'login_form[password]': password,
                'login_form[_token]': token}
 
-    res_post = session.post('https://www.crunchyroll.com/login', data=payload, headers=headers, allow_redirects = False)
+    res_post = session.post('https://www.crunchyroll.com/login', data=payload, headers=headers, cookies=cookies, allow_redirects = False)
+    
+    print token
+    session.cookies.set('token', token, domain='.crunchyroll.com', path='/')
+    print session.cookies._cookies['.crunchyroll.com']['/']['token']
+    print session.cookies['token']
+    print session.cookies
     if not (res_post.status_code == 302 or (res_post.status_code == 200 and username == '')):
       print 'Login failed'
       sys.exit()
 
     for c in session.cookies:
         c.expires = 9999999999  # Saturday, November 20th 2286, 17:46:39 (GMT)
-
+    
     del session.cookies['c_visitor']
 
     userstatus = getuserstatus(session)
