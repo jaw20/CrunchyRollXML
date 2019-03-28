@@ -262,10 +262,7 @@ Booting up...
     vid_id = xmlconfig.find('media_id').string
     title = xmlconfig.find('series_title').string 
     title = pattern.sub(lambda m: rep[re.escape(m.group(0))], title)
-    if float(xmlconfig.find('episode_number').string) < 10:
-        title = unidecode(title + ' - S01E0' + xmlconfig.find('episode_number').string)
-    else:
-        title = unidecode(title + ' - S01E' + xmlconfig.find('episode_number').string)
+    title = unidecode(title + ' - S01E' + xmlconfig.find('episode_number').string)
     print xmlconfig.find('exclusive').string.replace('Stream','Download') 
     print title
 
